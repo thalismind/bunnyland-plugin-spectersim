@@ -19,6 +19,7 @@ from bunnyland.core import (
 from relics import Entity, World
 
 from .components import GhostDetectorComponent, RadioDetectorComponent
+from .rituals import RitualKitComponent, WardComponent
 
 
 def _link_into_room(world: World, item: Entity, room_id) -> None:
@@ -57,4 +58,32 @@ def spawn_radio(world: World, *, room_id=None, sound: str = "hiss") -> Entity:
     return item
 
 
-__all__ = ["spawn_ghost_detector", "spawn_radio"]
+def spawn_ritual_kit(world: World, *, room_id=None, potency: float = 0.5) -> Entity:
+    """Spawn a holdable ritual kit item, optionally placed in ``room_id``."""
+    item = spawn_entity(
+        world,
+        [
+            IdentityComponent(name="ritual kit", kind="item", tags=("spectersim",)),
+            PortableComponent(),
+            HoldableComponent(slot="hand"),
+            RitualKitComponent(potency=potency),
+        ],
+    )
+    _link_into_room(world, item, room_id)
+    return item
+
+
+def spawn_ward(world: World, *, room_id=None, strength: float = 1.0) -> Entity:
+    """Spawn a standalone ward entity, optionally placed in ``room_id`` to protect it."""
+    ward = spawn_entity(
+        world,
+        [
+            IdentityComponent(name="ward", kind="ward", tags=("spectersim",)),
+            WardComponent(strength=strength),
+        ],
+    )
+    _link_into_room(world, ward, room_id)
+    return ward
+
+
+__all__ = ["spawn_ghost_detector", "spawn_radio", "spawn_ritual_kit", "spawn_ward"]

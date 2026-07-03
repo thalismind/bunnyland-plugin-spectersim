@@ -41,3 +41,20 @@ bunnyland serve --module bunnyland_spectersim
 - **Two verbs** — `power-detector` and `set-detector-volume` — usable by the holder
   (human or AI).
 - **Spawn factories** — `spawn_ghost_detector`, `spawn_radio`.
+
+### v2 — sanity and rituals
+
+- **Sanity** — `SanityComponent(current, maximum)` on characters and a per-tick
+  `SanityConsequence` that drains sanity near `SpectralMarkerComponent` entities and in dark
+  rooms, recovers it in safe or bright spirit-free rooms (clamped `0..maximum`), and emits a
+  `SanityChangedEvent` on band crossings. `sanity_fragments` inject escalating first-person
+  distortion lines at low sanity (shaking, whispering, and a hallucinated presence at
+  critical), visible only to the afflicted character.
+- **Rituals & wards** — `WardComponent` marks a room (or a placed ward entity) as protected;
+  `RitualKitComponent` is a held banishing tool. `WardConsequence` passively weakens then
+  banishes (strips the `SpectralMarkerComponent` from) any presence caught in a warded room.
+  Verbs `draw-ward` (place a ward, optionally consuming a held reagent) and `perform-ritual`
+  (channel a held kit to weaken/banish a presence in the room) emit `WardDrawnEvent`,
+  `PresenceWeakenedEvent`, and `PresenceBanishedEvent`. `ritual_fragments` render ward
+  protection and the held-kit line.
+- **Spawn factories** — `spawn_ritual_kit`, `spawn_ward`.
