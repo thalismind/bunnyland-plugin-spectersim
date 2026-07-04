@@ -19,6 +19,7 @@ from bunnyland.core import (
 from relics import Entity, World
 
 from .components import GhostDetectorComponent, RadioDetectorComponent
+from .evidence import EvidenceComponent
 from .rituals import RitualKitComponent, WardComponent
 
 
@@ -73,6 +74,21 @@ def spawn_ritual_kit(world: World, *, room_id=None, potency: float = 0.5) -> Ent
     return item
 
 
+def spawn_recorder(world: World, *, room_id=None) -> Entity:
+    """Spawn a holdable EVP recorder item, optionally placed in ``room_id``."""
+    item = spawn_entity(
+        world,
+        [
+            IdentityComponent(name="EVP recorder", kind="item", tags=("spectersim",)),
+            PortableComponent(),
+            HoldableComponent(slot="hand"),
+            EvidenceComponent(),
+        ],
+    )
+    _link_into_room(world, item, room_id)
+    return item
+
+
 def spawn_ward(world: World, *, room_id=None, strength: float = 1.0) -> Entity:
     """Spawn a standalone ward entity, optionally placed in ``room_id`` to protect it."""
     ward = spawn_entity(
@@ -86,4 +102,10 @@ def spawn_ward(world: World, *, room_id=None, strength: float = 1.0) -> Entity:
     return ward
 
 
-__all__ = ["spawn_ghost_detector", "spawn_radio", "spawn_ritual_kit", "spawn_ward"]
+__all__ = [
+    "spawn_ghost_detector",
+    "spawn_radio",
+    "spawn_recorder",
+    "spawn_ritual_kit",
+    "spawn_ward",
+]

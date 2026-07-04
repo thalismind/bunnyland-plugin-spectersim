@@ -18,6 +18,17 @@ particular marker component share its room**. Two variants ship out of the box:
   ritual kit to weaken and finally banish a spectral presence; a warded room also erodes any
   trapped presence passively.
 
+**v3** bundles two more:
+
+- **EVP / evidence log** — the `log-reading` verb captures eerie proof of a haunting (EVP
+  recordings, cold spots, orb sightings, detector spikes) into an investigator's private
+  `EvidenceLogComponent`, recordable only when a spectral presence or a reacting detector is
+  actually present. Evidence content is deterministic, and prompt fragments tally the log
+  ("Your evidence log holds 3 EVP captures.").
+- **Fog** — a `FogComponent` on rooms whose density drifts and thickens over time (thicker at
+  night and in spectral-heavy rooms) and shrinks perception, so a fog-bound character sees
+  fewer entities and loses sight of the exits.
+
 This repo intentionally keeps all detector work outside the main `bunnyland-server` repo.
 
 ## Layout
@@ -50,6 +61,16 @@ v2 additionally contributes:
 - `draw-ward` and `perform-ritual` - verbs for placing wards and banishing presences.
 - `ritual_fragments` - renders ward protection and the held-kit line into prompts.
 - `spawn_ritual_kit`, `spawn_ward` - spawn factories.
+
+v3 additionally contributes:
+
+- `EvidenceComponent`, `EvidenceLogComponent`, and the `log-reading` verb - capturing and
+  reviewing spectral evidence into an investigator's private log, with `EvidenceRecordedEvent`
+  and first-person `evidence_fragments`.
+- `FogComponent` and `FogConsequence` - drifting/thickening room fog with `FogChangedEvent`s;
+  `perceive_through_fog` shrinks the core perception projection and `fog_fragments` describe
+  the murk.
+- `spawn_recorder` - spawn factory for an EVP recorder.
 
 ## Running
 

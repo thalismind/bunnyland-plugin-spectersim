@@ -4,6 +4,9 @@ from bunnyland.core.world_actor import WorldActor
 from bunnyland.plugins import apply_plugins, load_modules
 
 from bunnyland_spectersim import (
+    EvidenceComponent,
+    EvidenceLogComponent,
+    FogComponent,
     GhostDetectorComponent,
     RadioDetectorComponent,
     RadioSourceMarkerComponent,
@@ -12,6 +15,8 @@ from bunnyland_spectersim import (
     SpecterWorldgenHook,
     SpectralMarkerComponent,
     WardComponent,
+    evidence_fragments,
+    fog_fragments,
     ritual_fragments,
     sanity_fragments,
     spectersim_fragments,
@@ -37,9 +42,9 @@ def test_plugin_declares_its_contributions():
     assert spectersim_fragments in plugin.content.prompt_fragments
 
 
-def test_plugin_is_v2():
+def test_plugin_is_v3():
     plugin = load_modules(["bunnyland_spectersim"])[0]
-    assert plugin.version == "0.2.0"
+    assert plugin.version == "0.3.0"
 
 
 def test_plugin_declares_v2_contributions():
@@ -48,6 +53,14 @@ def test_plugin_declares_v2_contributions():
         assert component in plugin.ecs.components
     assert sanity_fragments in plugin.content.prompt_fragments
     assert ritual_fragments in plugin.content.prompt_fragments
+
+
+def test_plugin_declares_v3_contributions():
+    plugin = load_modules(["bunnyland_spectersim"])[0]
+    for component in (EvidenceComponent, EvidenceLogComponent, FogComponent):
+        assert component in plugin.ecs.components
+    assert evidence_fragments in plugin.content.prompt_fragments
+    assert fog_fragments in plugin.content.prompt_fragments
 
 
 def test_plugin_applies_and_registers_verbs():
@@ -60,4 +73,5 @@ def test_plugin_applies_and_registers_verbs():
         "set-detector-volume",
         "draw-ward",
         "perform-ritual",
+        "log-reading",
     } <= command_types

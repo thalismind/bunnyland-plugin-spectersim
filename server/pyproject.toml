@@ -1,7 +1,7 @@
 [project]
 name = "bunnyland-spectersim"
-version = "0.2.0"
-description = "Out-of-tree Bunnyland plugin: Silent Hill / Ghost Hunters-style monster-detecting devices, plus a sanity meter and banishing rituals/wards."
+version = "0.3.0"
+description = "Out-of-tree Bunnyland plugin: paranormal monster-detecting devices, plus a sanity meter, banishing rituals/wards, an EVP evidence log, and obscuring fog."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

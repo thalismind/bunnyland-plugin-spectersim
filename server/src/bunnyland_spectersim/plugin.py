@@ -19,8 +19,21 @@ from .components import (
 )
 from .enrichment import SpecterWorldgenHook
 from .events import DetectorPoweredEvent, DetectorVolumeSetEvent
+from .evidence import (
+    EVIDENCE_ACTION_DEFINITIONS,
+    EVIDENCE_ACTION_HANDLERS,
+    EvidenceComponent,
+    EvidenceLogComponent,
+    EvidenceRecordedEvent,
+    evidence_fragments,
+)
+from .fog import FogChangedEvent, FogComponent, fog_fragments
 from .fragments import spectersim_fragments
-from .install import install_spectersim, install_spectersim_v2
+from .install import (
+    install_spectersim,
+    install_spectersim_v2,
+    install_spectersim_v3,
+)
 from .rituals import (
     RITUAL_ACTION_DEFINITIONS,
     RITUAL_ACTION_HANDLERS,
@@ -40,7 +53,7 @@ def plugin() -> Plugin:
     return Plugin(
         id=PLUGIN_ID,
         name="Bunnyland Spectersim",
-        version="0.2.0",
+        version="0.3.0",
         default_enabled=True,
         ecs=EcsContribution(
             components=(
@@ -51,11 +64,22 @@ def plugin() -> Plugin:
                 SanityComponent,
                 WardComponent,
                 RitualKitComponent,
+                EvidenceComponent,
+                EvidenceLogComponent,
+                FogComponent,
             ),
         ),
         commands=CommandContribution(
-            action_handlers=DETECTOR_ACTION_HANDLERS + RITUAL_ACTION_HANDLERS,
-            action_definitions=DETECTOR_ACTION_DEFINITIONS + RITUAL_ACTION_DEFINITIONS,
+            action_handlers=(
+                DETECTOR_ACTION_HANDLERS
+                + RITUAL_ACTION_HANDLERS
+                + EVIDENCE_ACTION_HANDLERS
+            ),
+            action_definitions=(
+                DETECTOR_ACTION_DEFINITIONS
+                + RITUAL_ACTION_DEFINITIONS
+                + EVIDENCE_ACTION_DEFINITIONS
+            ),
             typed_events=(
                 DetectorPoweredEvent,
                 DetectorVolumeSetEvent,
@@ -63,13 +87,25 @@ def plugin() -> Plugin:
                 WardDrawnEvent,
                 PresenceWeakenedEvent,
                 PresenceBanishedEvent,
+                EvidenceRecordedEvent,
+                FogChangedEvent,
             ),
         ),
         runtime=RuntimeContribution(
-            service_factories=(install_spectersim, install_spectersim_v2),
+            service_factories=(
+                install_spectersim,
+                install_spectersim_v2,
+                install_spectersim_v3,
+            ),
         ),
         content=ContentContribution(
-            prompt_fragments=(spectersim_fragments, sanity_fragments, ritual_fragments),
+            prompt_fragments=(
+                spectersim_fragments,
+                sanity_fragments,
+                ritual_fragments,
+                evidence_fragments,
+                fog_fragments,
+            ),
             worldgen_hooks=(SpecterWorldgenHook,),
         ),
     )
