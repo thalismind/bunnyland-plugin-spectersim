@@ -1,7 +1,7 @@
 # Bunnyland Spectersim
 
 Out-of-tree [Bunnyland](https://github.com/thalismind/bunnyland-server) plugin that adds
-Silent Hill / Ghost Hunters-style **monster-detecting devices**. A device makes noise (a
+paranormal **monster-detecting devices**. A device makes noise (a
 wail, a hiss, a buzz, a hum, a beep…) whose **volume rises when entities carrying a
 particular marker component share its room**. Two variants ship out of the box:
 
