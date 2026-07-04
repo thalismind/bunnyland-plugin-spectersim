@@ -33,7 +33,7 @@ from .rituals import (
 )
 from .sanity import SanityChangedEvent, SanityComponent, sanity_fragments
 
-PLUGIN_ID = "bunnyland_spectersim"
+PLUGIN_ID = "bunnyland.spectersim"
 
 
 def plugin() -> Plugin:
