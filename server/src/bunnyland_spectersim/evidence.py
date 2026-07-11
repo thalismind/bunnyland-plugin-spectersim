@@ -113,10 +113,7 @@ def _log_summary(entries: tuple[EvidenceEntry, ...]) -> str:
     counts: dict[str, int] = {}
     for entry in entries:
         counts[entry.kind] = counts.get(entry.kind, 0) + 1
-    parts = [
-        f"{count} {kind}{'s' if count != 1 else ''}"
-        for kind, count in sorted(counts.items())
-    ]
+    parts = [f"{count} {kind}{'s' if count != 1 else ''}" for kind, count in sorted(counts.items())]
     return "Your evidence log holds " + ", ".join(parts) + "."
 
 
@@ -169,9 +166,7 @@ def _detector_is_reacting(world: World, room: Entity) -> bool:
     return False
 
 
-def _collect_evidence(
-    world: World, room: Entity, epoch: int
-) -> tuple[EvidenceEntry, ...]:
+def _collect_evidence(world: World, room: Entity, epoch: int) -> tuple[EvidenceEntry, ...]:
     """Deterministically capture the room's current spectral evidence."""
     room_id = str(room.id)
     entries: list[EvidenceEntry] = []

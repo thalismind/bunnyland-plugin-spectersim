@@ -17,7 +17,7 @@ from .components import (
     RadioSourceMarkerComponent,
     SpectralMarkerComponent,
 )
-from .enrichment import SpecterWorldgenHook
+from .enrichment import SpecterGenerationEnricher
 from .events import DetectorPoweredEvent, DetectorVolumeSetEvent
 from .evidence import (
     EVIDENCE_ACTION_DEFINITIONS,
@@ -71,9 +71,7 @@ def plugin() -> Plugin:
         ),
         commands=CommandContribution(
             action_handlers=(
-                DETECTOR_ACTION_HANDLERS
-                + RITUAL_ACTION_HANDLERS
-                + EVIDENCE_ACTION_HANDLERS
+                DETECTOR_ACTION_HANDLERS + RITUAL_ACTION_HANDLERS + EVIDENCE_ACTION_HANDLERS
             ),
             action_definitions=(
                 DETECTOR_ACTION_DEFINITIONS
@@ -106,7 +104,7 @@ def plugin() -> Plugin:
                 evidence_fragments,
                 fog_fragments,
             ),
-            worldgen_hooks=(SpecterWorldgenHook,),
+            generation_enrichers=(SpecterGenerationEnricher(),),
         ),
     )
 

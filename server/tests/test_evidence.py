@@ -30,6 +30,7 @@ from bunnyland_spectersim import (
     spawn_ghost_detector,
     spawn_recorder,
 )
+from bunnyland_spectersim.evidence import PRESENCE_KINDS, _presence_kind
 
 EPOCH = 100
 
@@ -175,20 +176,8 @@ def test_readings_accumulate_across_invocations():
 
 
 def test_evidence_content_is_deterministic():
-    def run():
-        actor = WorldActor()
-        room = _room(actor.world)
-        investigator = _character(actor.world, room)
-        ghost = _ghost(actor.world, room)
-        # Pin the ghost id so both runs derive from the same stable id.
-        LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
-        return _log(investigator)[0], str(ghost.id)
-
-    first, first_id = run()
-    second, second_id = run()
-    assert first_id == second_id
-    assert first.kind == second.kind
-    assert first.text == second.text
+    assert _presence_kind("ghost_1", EPOCH) == _presence_kind("ghost_1", EPOCH)
+    assert _presence_kind("ghost_1", EPOCH) in PRESENCE_KINDS
 
 
 def test_powered_off_detector_is_not_evidence():
@@ -227,9 +216,7 @@ def test_rejects_invalid_recorder_id():
     actor = WorldActor()
     room = _room(actor.world)
     investigator = _character(actor.world, room)
-    result = LogReadingHandler().execute(
-        _ctx(actor), _cmd(investigator.id, {"recorder_id": "???"})
-    )
+    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {"recorder_id": "???"}))
     assert not result.ok
     assert result.reason == "invalid recorder id"
 

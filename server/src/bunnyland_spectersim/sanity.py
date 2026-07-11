@@ -2,7 +2,7 @@
 
 Sanity is the inverse of the ``needs`` meters — a *high* value is good (calm) and a *low*
 value is bad (dread) — so it carries its own ``current``/``maximum`` fields rather than the
-shared rising :class:`~bunnyland.mechanics.meter.Meter`. A per-tick
+shared rising :class:`~bunnyland.foundation.meters.mechanics.Meter`. A per-tick
 :class:`SanityConsequence` drains it for every active character standing near
 :class:`~bunnyland_spectersim.components.SpectralMarkerComponent` entities or in a dark room,
 and lets it recover in a safe or bright, spirit-free room.

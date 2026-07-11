@@ -8,13 +8,7 @@ plugin exists.
 
 from __future__ import annotations
 
-from bunnyland.core.ecs import parse_entity_id, replace_component
-from bunnyland.core.events import (
-    CharacterGeneratedEvent,
-    GeneratedEntityEvent,
-    ObjectGeneratedEvent,
-)
-from bunnyland.core.world_actor import WorldActor
+from bunnyland.core.generation import GenerationDelta, GenerationRequest
 
 from .components import RadioSourceMarkerComponent, SpectralMarkerComponent
 
@@ -56,53 +50,34 @@ BROADCAST_TERMS = (
 )
 
 
-def _text(event: GeneratedEntityEvent) -> str:
-    generation = event.generation
+def _text(request: GenerationRequest) -> str:
     return " ".join(
         (
-            event.entity_kind,
-            generation.description,
-            *generation.tags,
-            *generation.wants,
-            *generation.needs,
+            request.entity_kind,
+            request.description,
+            *request.tags,
+            *request.capabilities,
         )
     ).casefold()
 
 
-def _mentions(event: GeneratedEntityEvent, terms: tuple[str, ...]) -> bool:
-    text = _text(event)
+def _mentions(request: GenerationRequest, terms: tuple[str, ...]) -> bool:
+    text = _text(request)
     return any(term in text for term in terms)
 
 
-class SpecterWorldgenHook:
-    """Attach detectable markers to generated enemies and broadcasters."""
+class SpecterGenerationEnricher:
+    """Plan detectable markers before a generated entity is instantiated."""
 
-    def subscribe(self, actor: WorldActor) -> None:
-        self._actor = actor
-        actor.bus.subscribe(CharacterGeneratedEvent, self._on_character)
-        actor.bus.subscribe(ObjectGeneratedEvent, self._on_object)
+    capabilities: tuple[str, ...] = ()
 
-    def _entity(self, entity_id: str):
-        parsed = parse_entity_id(entity_id)
-        if parsed is None or not self._actor.world.has_entity(parsed):
-            return None
-        return self._actor.world.get_entity(parsed)
-
-    def _on_character(self, event: CharacterGeneratedEvent) -> None:
-        entity = self._entity(event.entity_id)
-        if entity is None or entity.has_component(SpectralMarkerComponent):
-            return
-        if _mentions(event, HOSTILE_TERMS):
-            replace_component(entity, SpectralMarkerComponent())
-
-    def _on_object(self, event: ObjectGeneratedEvent) -> None:
-        entity = self._entity(event.entity_id)
-        if entity is None:
-            return
-        if not entity.has_component(RadioSourceMarkerComponent) and _mentions(
-            event, BROADCAST_TERMS
-        ):
-            replace_component(entity, RadioSourceMarkerComponent())
+    def enrich(self, request: GenerationRequest) -> GenerationDelta:
+        components = []
+        if request.entity_kind == "character" and _mentions(request, HOSTILE_TERMS):
+            components.append(SpectralMarkerComponent())
+        if request.entity_kind in {"object", "item"} and _mentions(request, BROADCAST_TERMS):
+            components.append(RadioSourceMarkerComponent())
+        return GenerationDelta(components=tuple(components))
 
 
-__all__ = ["BROADCAST_TERMS", "HOSTILE_TERMS", "SpecterWorldgenHook"]
+__all__ = ["BROADCAST_TERMS", "HOSTILE_TERMS", "SpecterGenerationEnricher"]

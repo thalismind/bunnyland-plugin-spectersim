@@ -50,9 +50,7 @@ class DetectionConsequence:
             strength_by_room = self._marker_strength_by_room(world, marker_type)
             for detector in list(world.query().with_all([detector_type]).execute_entities()):
                 seen.add(str(detector.id))
-                self._update_detector(
-                    world, epoch, detector, detector_type, strength_by_room
-                )
+                self._update_detector(world, epoch, detector, detector_type, strength_by_room)
         # Drop pulse state for detectors that no longer exist so the dict cannot grow forever.
         for stale in [key for key in self._pulses if key not in seen]:
             del self._pulses[stale]

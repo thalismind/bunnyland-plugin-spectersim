@@ -16,7 +16,7 @@ from .components import (
     detector_component_of,
 )
 from .detection import DetectionConsequence
-from .enrichment import SpecterWorldgenHook
+from .enrichment import SpecterGenerationEnricher
 from .events import DetectorPoweredEvent, DetectorVolumeSetEvent
 from .evidence import (
     EvidenceComponent,
@@ -96,7 +96,7 @@ __all__ = [
     "SanityComponent",
     "SanityConsequence",
     "SetDetectorVolumeHandler",
-    "SpecterWorldgenHook",
+    "SpecterGenerationEnricher",
     "SpectralMarkerComponent",
     "WardComponent",
     "WardConsequence",

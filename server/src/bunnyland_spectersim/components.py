@@ -41,8 +41,9 @@ class RadioSourceMarkerComponent(Component):
 # --------------------------------------------------------------------------------------
 
 
-def _detector_lines(noun: str, sound: str, *, powered: bool, volume: float,
-                    ctx: ComponentPromptContext) -> tuple[str, ...]:
+def _detector_lines(
+    noun: str, sound: str, *, powered: bool, volume: float, ctx: ComponentPromptContext
+) -> tuple[str, ...]:
     """Render one detector's current state as prompt text.
 
     First person (the holder, or the viewer standing over a loose device) reads its own
