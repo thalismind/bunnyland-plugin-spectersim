@@ -21,6 +21,7 @@ from bunnyland_spectersim import (
     sanity_fragments,
     spectersim_fragments,
 )
+from bunnyland_spectersim.integration_3d import install_spectersim_3d
 from bunnyland_spectersim.plugin import PLUGIN_ID
 from bunnyland_spectersim.plugin import bunnyland_plugins as _plugins
 
@@ -28,6 +29,8 @@ from bunnyland_spectersim.plugin import bunnyland_plugins as _plugins
 def test_plugin_loads_with_module_qualified_id():
     plugins = _plugins()
     assert [p.id for p in plugins] == [PLUGIN_ID]
+    assert plugins[0].dependencies.integrates_with == ("bunnyland.3d",)
+    assert plugins[0].runtime.integration_factories == (install_spectersim_3d,)
 
 
 def test_plugin_declares_its_contributions():

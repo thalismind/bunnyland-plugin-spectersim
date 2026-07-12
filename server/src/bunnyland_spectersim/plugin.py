@@ -5,6 +5,7 @@ from __future__ import annotations
 from bunnyland.plugins import (
     CommandContribution,
     ContentContribution,
+    DependencyContribution,
     EcsContribution,
     Plugin,
     RuntimeContribution,
@@ -34,6 +35,7 @@ from .install import (
     install_spectersim_v2,
     install_spectersim_v3,
 )
+from .integration_3d import install_spectersim_3d
 from .rituals import (
     RITUAL_ACTION_DEFINITIONS,
     RITUAL_ACTION_HANDLERS,
@@ -55,6 +57,7 @@ def plugin() -> Plugin:
         name="Bunnyland Spectersim",
         version="0.3.0",
         default_enabled=True,
+        dependencies=DependencyContribution(integrates_with=("bunnyland.3d",)),
         ecs=EcsContribution(
             components=(
                 SpectralMarkerComponent,
@@ -95,6 +98,7 @@ def plugin() -> Plugin:
                 install_spectersim_v2,
                 install_spectersim_v3,
             ),
+            integration_factories=(install_spectersim_3d,),
         ),
         content=ContentContribution(
             prompt_fragments=(
