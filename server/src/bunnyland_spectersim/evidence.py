@@ -20,8 +20,8 @@ from __future__ import annotations
 import hashlib
 from dataclasses import replace
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import contents, replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility
 from bunnyland.core.handlers import (
@@ -264,8 +264,8 @@ LOG_READING_DEF = ActionDefinition(
     command_type="log-reading",
     title="Log reading",
     description="Record and review spectral evidence from the room into your log.",
-    lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    lane=Lane.FOCUS,
+    cost=effort_cost(focus=ActionEffort.ROUTINE),
     arguments={
         "recorder_id": ActionArgument(
             title="Recorder",

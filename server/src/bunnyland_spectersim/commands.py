@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import EventVisibility
 from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_entity
@@ -117,7 +117,7 @@ POWER_DEF = ActionDefinition(
     title="Power detector",
     description="Switch a detector you are holding on or off.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "item_id": ActionArgument(
             title="Detector", description="The detector to toggle.", kind="entity", required=True
@@ -135,7 +135,7 @@ VOLUME_DEF = ActionDefinition(
     title="Set detector volume",
     description="Adjust the volume of a detector you are holding (0.0 to 1.0).",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "item_id": ActionArgument(
             title="Detector", description="The detector to adjust.", kind="entity", required=True

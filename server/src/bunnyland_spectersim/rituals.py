@@ -22,8 +22,8 @@ from __future__ import annotations
 from dataclasses import replace
 
 from bunnyland.core import RoomComponent
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import contents, replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
 from bunnyland.core.handlers import (
@@ -311,7 +311,7 @@ DRAW_WARD_DEF = ActionDefinition(
     title="Draw ward",
     description="Draw a protective ward in the room you are in.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.EXTENDED),
     arguments={
         "reagent_id": ActionArgument(
             title="Reagent",
@@ -331,7 +331,7 @@ PERFORM_RITUAL_DEF = ActionDefinition(
     title="Perform ritual",
     description="Channel a held ritual kit to banish a spectral presence in the room.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.MAJOR),
     arguments={
         "kit_id": ActionArgument(
             title="Ritual kit",
