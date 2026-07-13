@@ -13,6 +13,7 @@ from bunnyland.core import (
 )
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_spectersim import (
     DrawWardHandler,
@@ -163,7 +164,7 @@ def test_draw_ward_places_ward_on_current_room():
     room = _room(actor.world)
     caster = _character(actor.world, room)
 
-    result = DrawWardHandler().execute(_ctx(actor), _cmd(caster.id, "draw-ward", {}))
+    result = execute_handler(DrawWardHandler(), _ctx(actor), _cmd(caster.id, "draw-ward", {}))
 
     assert result.ok
     assert room.has_component(WardComponent)
@@ -180,8 +181,10 @@ def test_draw_ward_consumes_a_held_reagent():
     )
     _hold(caster, reagent)
 
-    result = DrawWardHandler().execute(
-        _ctx(actor), _cmd(caster.id, "draw-ward", {"reagent_id": str(reagent.id)})
+    result = execute_handler(
+        DrawWardHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "draw-ward", {"reagent_id": str(reagent.id)}),
     )
 
     assert result.ok
@@ -190,14 +193,14 @@ def test_draw_ward_consumes_a_held_reagent():
 
 def test_draw_ward_rejects_invalid_character():
     actor = WorldActor()
-    result = DrawWardHandler().execute(_ctx(actor), _cmd("???", "draw-ward", {}))
+    result = execute_handler(DrawWardHandler(), _ctx(actor), _cmd("???", "draw-ward", {}))
     assert not result.ok
     assert result.reason == "invalid character id"
 
 
 def test_draw_ward_rejects_missing_character():
     actor = WorldActor()
-    result = DrawWardHandler().execute(_ctx(actor), _cmd("entity_9999", "draw-ward", {}))
+    result = execute_handler(DrawWardHandler(), _ctx(actor), _cmd("entity_9999", "draw-ward", {}))
     assert not result.ok
     assert result.reason == "character does not exist"
 
@@ -207,7 +210,7 @@ def test_draw_ward_rejects_character_without_a_room():
     caster = spawn_entity(
         actor.world, [IdentityComponent(name="drifter", kind="character"), CharacterComponent()]
     )
-    result = DrawWardHandler().execute(_ctx(actor), _cmd(caster.id, "draw-ward", {}))
+    result = execute_handler(DrawWardHandler(), _ctx(actor), _cmd(caster.id, "draw-ward", {}))
     assert not result.ok
     assert result.reason == "you are not in a room"
 
@@ -218,7 +221,7 @@ def test_draw_ward_rejects_already_warded_room():
     room.add_component(WardComponent())
     caster = _character(actor.world, room)
 
-    result = DrawWardHandler().execute(_ctx(actor), _cmd(caster.id, "draw-ward", {}))
+    result = execute_handler(DrawWardHandler(), _ctx(actor), _cmd(caster.id, "draw-ward", {}))
 
     assert not result.ok
     assert result.reason == "this room is already warded"
@@ -228,8 +231,8 @@ def test_draw_ward_rejects_invalid_reagent():
     actor = WorldActor()
     room = _room(actor.world)
     caster = _character(actor.world, room)
-    result = DrawWardHandler().execute(
-        _ctx(actor), _cmd(caster.id, "draw-ward", {"reagent_id": "???"})
+    result = execute_handler(
+        DrawWardHandler(), _ctx(actor), _cmd(caster.id, "draw-ward", {"reagent_id": "???"})
     )
     assert not result.ok
     assert result.reason == "invalid reagent id"
@@ -239,8 +242,8 @@ def test_draw_ward_rejects_missing_reagent():
     actor = WorldActor()
     room = _room(actor.world)
     caster = _character(actor.world, room)
-    result = DrawWardHandler().execute(
-        _ctx(actor), _cmd(caster.id, "draw-ward", {"reagent_id": "entity_9999"})
+    result = execute_handler(
+        DrawWardHandler(), _ctx(actor), _cmd(caster.id, "draw-ward", {"reagent_id": "entity_9999"})
     )
     assert not result.ok
     assert result.reason == "reagent does not exist"
@@ -255,8 +258,10 @@ def test_draw_ward_rejects_unheld_reagent():
     )
     room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), reagent.id)  # on the floor
 
-    result = DrawWardHandler().execute(
-        _ctx(actor), _cmd(caster.id, "draw-ward", {"reagent_id": str(reagent.id)})
+    result = execute_handler(
+        DrawWardHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "draw-ward", {"reagent_id": str(reagent.id)}),
     )
 
     assert not result.ok
@@ -276,8 +281,10 @@ def test_perform_ritual_weakens_a_presence():
     _hold(caster, kit)
     ghost = _ghost(actor.world, room, strength=1.0)
 
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)}),
     )
 
     assert result.ok
@@ -293,8 +300,10 @@ def test_perform_ritual_banishes_a_weak_presence():
     _hold(caster, kit)
     ghost = _ghost(actor.world, room, strength=0.5)
 
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)}),
     )
 
     assert result.ok
@@ -311,7 +320,8 @@ def test_perform_ritual_targets_named_presence():
     _ghost(actor.world, room, strength=1.0)
     chosen = _ghost(actor.world, room, strength=0.4)
 
-    result = PerformRitualHandler().execute(
+    result = execute_handler(
+        PerformRitualHandler(),
         _ctx(actor),
         _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id), "target_id": str(chosen.id)}),
     )
@@ -322,8 +332,8 @@ def test_perform_ritual_targets_named_presence():
 
 def test_perform_ritual_rejects_invalid_character():
     actor = WorldActor()
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd("???", "perform-ritual", {"kit_id": "entity_1"})
+    result = execute_handler(
+        PerformRitualHandler(), _ctx(actor), _cmd("???", "perform-ritual", {"kit_id": "entity_1"})
     )
     assert not result.ok
     assert result.reason == "invalid character id"
@@ -333,8 +343,8 @@ def test_perform_ritual_rejects_invalid_kit_id():
     actor = WorldActor()
     room = _room(actor.world)
     caster = _character(actor.world, room)
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": "???"})
+    result = execute_handler(
+        PerformRitualHandler(), _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": "???"})
     )
     assert not result.ok
     assert result.reason == "invalid kit id"
@@ -344,8 +354,10 @@ def test_perform_ritual_rejects_missing_kit():
     actor = WorldActor()
     room = _room(actor.world)
     caster = _character(actor.world, room)
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": "entity_9999"})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": "entity_9999"}),
     )
     assert not result.ok
     assert result.reason == "ritual kit does not exist"
@@ -357,8 +369,10 @@ def test_perform_ritual_rejects_unheld_kit():
     caster = _character(actor.world, room)
     kit = spawn_ritual_kit(actor.world, room_id=room.id)  # on the floor
 
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)}),
     )
 
     assert not result.ok
@@ -375,8 +389,10 @@ def test_perform_ritual_rejects_non_kit_item():
     )
     _hold(caster, lantern)
 
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": str(lantern.id)})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": str(lantern.id)}),
     )
 
     assert not result.ok
@@ -391,8 +407,10 @@ def test_perform_ritual_rejects_caster_without_a_room():
     kit = spawn_ritual_kit(actor.world)
     _hold(caster, kit)
 
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)}),
     )
 
     assert not result.ok
@@ -406,8 +424,10 @@ def test_perform_ritual_rejects_when_nothing_to_banish():
     kit = spawn_ritual_kit(actor.world)
     _hold(caster, kit)
 
-    result = PerformRitualHandler().execute(
-        _ctx(actor), _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)})
+    result = execute_handler(
+        PerformRitualHandler(),
+        _ctx(actor),
+        _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id)}),
     )
 
     assert not result.ok
@@ -423,7 +443,8 @@ def test_perform_ritual_rejects_target_in_another_room():
     _hold(caster, kit)
     elsewhere = _ghost(actor.world, other, strength=1.0)
 
-    result = PerformRitualHandler().execute(
+    result = execute_handler(
+        PerformRitualHandler(),
         _ctx(actor),
         _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id), "target_id": str(elsewhere.id)}),
     )
@@ -440,7 +461,8 @@ def test_perform_ritual_rejects_non_spectral_target():
     _hold(caster, kit)
     bystander = _character(actor.world, room, name="Kell")
 
-    result = PerformRitualHandler().execute(
+    result = execute_handler(
+        PerformRitualHandler(),
         _ctx(actor),
         _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id), "target_id": str(bystander.id)}),
     )
@@ -456,7 +478,8 @@ def test_perform_ritual_rejects_missing_target():
     kit = spawn_ritual_kit(actor.world)
     _hold(caster, kit)
 
-    result = PerformRitualHandler().execute(
+    result = execute_handler(
+        PerformRitualHandler(),
         _ctx(actor),
         _cmd(caster.id, "perform-ritual", {"kit_id": str(kit.id), "target_id": "entity_9999"}),
     )

@@ -13,9 +13,7 @@ class _Value:
 
 
 def _fake_3d():
-    calls = SimpleNamespace(
-        particle_systems=[], effects=[], state_rules=[], models=[], visuals=[]
-    )
+    calls = SimpleNamespace(particle_systems=[], effects=[], state_rules=[], models=[], visuals=[])
 
     def record(name):
         def inner(_actor, owner, values):
@@ -71,10 +69,7 @@ def test_specter_and_ward_register_persistent_effects_and_keep_ward_model(monkey
         "bunnyland.spectersim/ward-aura",
         "bunnyland.spectersim/specter",
     ]
-    specter_colors = [
-        layer.kwargs["color"]
-        for layer in definitions[1].kwargs["particle_layers"]
-    ]
+    specter_colors = [layer.kwargs["color"] for layer in definitions[1].kwargs["particle_layers"]]
     assert specter_colors == ["#b9f5ff", "#68d8c0"]
     assert [rule.args[0] for rule in calls.state_rules[0][1]] == [
         "bunnyland.spectersim/ward-state",

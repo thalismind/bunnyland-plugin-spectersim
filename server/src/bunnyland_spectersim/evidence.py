@@ -22,16 +22,17 @@ from dataclasses import replace
 
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
-from bunnyland.core.ecs import contents, replace_component
+from bunnyland.core.ecs import contents
 from bunnyland.core.events import DomainEvent, EventVisibility
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_entity,
 )
+from bunnyland.core.mutations import MutationPlan, SetComponent
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
@@ -241,8 +242,8 @@ class LogReadingHandler:
             else EvidenceLogComponent()
         )
         updated = replace(log, entries=log.entries + evidence)
-        replace_component(character, updated)
-        return ok(
+        return planned(
+            MutationPlan((SetComponent(character.id, updated),)),
             EvidenceRecordedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.PRIVATE,
@@ -251,7 +252,7 @@ class LogReadingHandler:
                     count=len(evidence),
                     kinds=tuple(entry.kind for entry in evidence),
                 )
-            )
+            ),
         )
 
 

@@ -166,8 +166,10 @@ def install_spectersim_3d(actor, context) -> None:
             EntityVisualRule(
                 key=f"{owner}/ward-{name}",
                 priority=20,
-                predicate=lambda entity, lo=lower, hi=threshold: entity.has_component(WardComponent)
-                and lo <= entity.get_component(WardComponent).strength < hi,
+                predicate=lambda entity, lo=lower, hi=threshold: (
+                    entity.has_component(WardComponent)
+                    and lo <= entity.get_component(WardComponent).strength < hi
+                ),
                 contribution=EntityVisualContribution(
                     patches=(
                         VisualNodePatch(

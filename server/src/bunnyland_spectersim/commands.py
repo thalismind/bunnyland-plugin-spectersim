@@ -12,9 +12,9 @@ from dataclasses import replace
 
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
-from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import EventVisibility
-from bunnyland.core.handlers import HandlerContext, HandlerResult, ok, rejected, require_entity
+from bunnyland.core.handlers import HandlerContext, HandlerResult, planned, rejected, require_entity
+from bunnyland.core.mutations import MutationPlan, SetComponent
 
 from .components import detector_component_of
 from .events import DetectorPoweredEvent, DetectorVolumeSetEvent
@@ -65,8 +65,8 @@ class PowerDetectorHandler:
         character_id, item, component = resolved
         raw_on = command.payload.get("on")
         powered = (not component.powered) if raw_on is None else bool(raw_on)
-        replace_component(item, replace(component, powered=powered))
-        return ok(
+        return planned(
+            MutationPlan((SetComponent(item.id, replace(component, powered=powered)),)),
             DetectorPoweredEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
@@ -77,7 +77,7 @@ class PowerDetectorHandler:
                     powered=powered,
                     sound=component.sound,
                 )
-            )
+            ),
         )
 
 
@@ -97,8 +97,8 @@ class SetDetectorVolumeHandler:
             return rejected("volume level must be a number")
         if not 0.0 <= level <= 1.0:
             return rejected("volume must be between 0 and 1")
-        replace_component(item, replace(component, gain=level))
-        return ok(
+        return planned(
+            MutationPlan((SetComponent(item.id, replace(component, gain=level)),)),
             DetectorVolumeSetEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
@@ -108,7 +108,7 @@ class SetDetectorVolumeHandler:
                     item_id=str(item.id),
                     gain=level,
                 )
-            )
+            ),
         )
 
 

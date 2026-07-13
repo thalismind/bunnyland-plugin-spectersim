@@ -29,11 +29,12 @@ from bunnyland.core.events import DomainEvent, EventVisibility, event_base
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_entity,
 )
+from bunnyland.core.mutations import DeleteEntity, MutationPlan, RemoveComponent, SetComponent
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
@@ -216,10 +217,11 @@ class DrawWardHandler:
                 return rejected("you are not holding that reagent")
 
         strength = float(command.payload.get("strength", 1.0))
-        replace_component(room, WardComponent(strength=strength))
+        operations = [SetComponent(room.id, WardComponent(strength=strength))]
         if reagent is not None:
-            ctx.world.remove(reagent.id)
-        return ok(
+            operations.append(DeleteEntity(reagent.id))
+        return planned(
+            MutationPlan(tuple(operations)),
             WardDrawnEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
@@ -228,7 +230,7 @@ class DrawWardHandler:
                     target_ids=(str(room.id),),
                     room_id_warded=str(room.id),
                 )
-            )
+            ),
         )
 
 
@@ -263,8 +265,33 @@ class PerformRitualHandler:
             return rejection
 
         potency = kit.get_component(RitualKitComponent).potency
-        event = _weaken_presence(presence, potency, ctx.epoch, room_id=str(room.id))
-        return ok(event)
+        marker = presence.get_component(SpectralMarkerComponent)
+        new_strength = marker.strength - potency
+        if new_strength <= BANISH_THRESHOLD:
+            operation = RemoveComponent(presence.id, SpectralMarkerComponent)
+            event = PresenceBanishedEvent(
+                **ctx.event_base(
+                    visibility=EventVisibility.ROOM,
+                    room_id=str(room.id),
+                    target_ids=(str(presence.id),),
+                    target_id=str(presence.id),
+                )
+            )
+        else:
+            operation = SetComponent(
+                presence.id,
+                replace(marker, strength=new_strength),
+            )
+            event = PresenceWeakenedEvent(
+                **ctx.event_base(
+                    visibility=EventVisibility.ROOM,
+                    room_id=str(room.id),
+                    target_ids=(str(presence.id),),
+                    target_id=str(presence.id),
+                    strength=new_strength,
+                )
+            )
+        return planned(MutationPlan((operation,)), event)
 
     def _resolve_target(self, ctx: HandlerContext, room, command: SubmittedCommand):
         raw_target = command.payload.get("target_id")

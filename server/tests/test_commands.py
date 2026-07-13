@@ -13,6 +13,7 @@ from bunnyland.core import (
 )
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_spectersim import GhostDetectorComponent, spawn_ghost_detector
 from bunnyland_spectersim.commands import PowerDetectorHandler, SetDetectorVolumeHandler
@@ -53,8 +54,10 @@ def test_power_off_a_held_detector():
     detector = spawn_ghost_detector(actor.world)
     _hold(holder, detector)
 
-    result = PowerDetectorHandler().execute(
-        _ctx(actor), _cmd(holder.id, "power-detector", {"item_id": str(detector.id), "on": False})
+    result = execute_handler(
+        PowerDetectorHandler(),
+        _ctx(actor),
+        _cmd(holder.id, "power-detector", {"item_id": str(detector.id), "on": False}),
     )
 
     assert result.ok
@@ -66,8 +69,10 @@ def test_power_toggles_when_on_is_omitted():
     detector = spawn_ghost_detector(actor.world)  # powered on by default
     _hold(holder, detector)
 
-    PowerDetectorHandler().execute(
-        _ctx(actor), _cmd(holder.id, "power-detector", {"item_id": str(detector.id)})
+    execute_handler(
+        PowerDetectorHandler(),
+        _ctx(actor),
+        _cmd(holder.id, "power-detector", {"item_id": str(detector.id)}),
     )
 
     assert detector.get_component(GhostDetectorComponent).powered is False
@@ -78,7 +83,8 @@ def test_set_volume_updates_gain():
     detector = spawn_ghost_detector(actor.world)
     _hold(holder, detector)
 
-    result = SetDetectorVolumeHandler().execute(
+    result = execute_handler(
+        SetDetectorVolumeHandler(),
         _ctx(actor),
         _cmd(holder.id, "set-detector-volume", {"item_id": str(detector.id), "level": 0.25}),
     )
@@ -92,8 +98,10 @@ def test_power_rejects_invalid_character_id():
     detector = spawn_ghost_detector(actor.world)
     _hold(holder, detector)
 
-    result = PowerDetectorHandler().execute(
-        _ctx(actor), _cmd("???", "power-detector", {"item_id": str(detector.id)})
+    result = execute_handler(
+        PowerDetectorHandler(),
+        _ctx(actor),
+        _cmd("???", "power-detector", {"item_id": str(detector.id)}),
     )
 
     assert not result.ok
@@ -103,8 +111,10 @@ def test_power_rejects_invalid_character_id():
 def test_power_rejects_missing_item():
     actor, _room, holder = _world_with_holder()
 
-    result = PowerDetectorHandler().execute(
-        _ctx(actor), _cmd(holder.id, "power-detector", {"item_id": "entity_9999"})
+    result = execute_handler(
+        PowerDetectorHandler(),
+        _ctx(actor),
+        _cmd(holder.id, "power-detector", {"item_id": "entity_9999"}),
     )
 
     assert not result.ok
@@ -115,8 +125,10 @@ def test_power_rejects_detector_not_held():
     actor, room, holder = _world_with_holder()
     detector = spawn_ghost_detector(actor.world, room_id=room.id)  # on the floor, not held
 
-    result = PowerDetectorHandler().execute(
-        _ctx(actor), _cmd(holder.id, "power-detector", {"item_id": str(detector.id)})
+    result = execute_handler(
+        PowerDetectorHandler(),
+        _ctx(actor),
+        _cmd(holder.id, "power-detector", {"item_id": str(detector.id)}),
     )
 
     assert not result.ok
@@ -131,8 +143,10 @@ def test_power_rejects_non_detector_item():
     )
     _hold(holder, lantern)
 
-    result = PowerDetectorHandler().execute(
-        _ctx(actor), _cmd(holder.id, "power-detector", {"item_id": str(lantern.id)})
+    result = execute_handler(
+        PowerDetectorHandler(),
+        _ctx(actor),
+        _cmd(holder.id, "power-detector", {"item_id": str(lantern.id)}),
     )
 
     assert not result.ok
@@ -144,7 +158,8 @@ def test_set_volume_rejects_out_of_range():
     detector = spawn_ghost_detector(actor.world)
     _hold(holder, detector)
 
-    result = SetDetectorVolumeHandler().execute(
+    result = execute_handler(
+        SetDetectorVolumeHandler(),
         _ctx(actor),
         _cmd(holder.id, "set-detector-volume", {"item_id": str(detector.id), "level": 2.0}),
     )
@@ -158,7 +173,8 @@ def test_set_volume_rejects_non_numeric_level():
     detector = spawn_ghost_detector(actor.world)
     _hold(holder, detector)
 
-    result = SetDetectorVolumeHandler().execute(
+    result = execute_handler(
+        SetDetectorVolumeHandler(),
         _ctx(actor),
         _cmd(holder.id, "set-detector-volume", {"item_id": str(detector.id), "level": "loud"}),
     )

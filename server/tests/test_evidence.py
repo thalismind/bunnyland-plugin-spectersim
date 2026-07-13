@@ -17,6 +17,7 @@ from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.handlers import HandlerContext
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
+from conftest import execute_handler
 
 from bunnyland_spectersim import (
     EvidenceComponent,
@@ -98,7 +99,7 @@ def test_bare_handed_investigator_records_a_presence():
     investigator = _character(actor.world, room)
     _ghost(actor.world, room)
 
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
 
     assert result.ok
     assert isinstance(result.events[0], EvidenceRecordedEvent)
@@ -114,8 +115,8 @@ def test_recorder_captures_evidence():
     _hold(investigator, recorder)
     _ghost(actor.world, room)
 
-    result = LogReadingHandler().execute(
-        _ctx(actor), _cmd(investigator.id, {"recorder_id": str(recorder.id)})
+    result = execute_handler(
+        LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {"recorder_id": str(recorder.id)})
     )
 
     assert result.ok
@@ -129,7 +130,7 @@ def test_reacting_detector_alone_yields_a_spike():
     detector = spawn_ghost_detector(actor.world, room_id=room.id)
     _set_detector(detector, volume=2.5)  # NEAR band, no presence in the room
 
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
 
     assert result.ok
     assert [entry.kind for entry in _log(investigator)] == ["detector spike"]
@@ -143,7 +144,7 @@ def test_held_reacting_detector_counts_as_evidence():
     _hold(investigator, detector)
     _set_detector(detector, volume=3.5)
 
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
 
     assert result.ok
     assert "detector spike" in [entry.kind for entry in _log(investigator)]
@@ -157,7 +158,7 @@ def test_presence_and_spike_both_recorded():
     detector = spawn_ghost_detector(actor.world, room_id=room.id)
     _set_detector(detector, volume=5.0)
 
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
 
     assert result.ok
     assert result.events[0].count == 2
@@ -169,8 +170,8 @@ def test_readings_accumulate_across_invocations():
     investigator = _character(actor.world, room)
     _ghost(actor.world, room)
 
-    LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
-    LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
+    execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
 
     assert len(_log(investigator)) == 2
 
@@ -187,7 +188,7 @@ def test_powered_off_detector_is_not_evidence():
     detector = spawn_ghost_detector(actor.world, room_id=room.id)
     _set_detector(detector, powered=False, volume=0.0)
 
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
 
     assert not result.ok
     assert result.reason == "there is nothing to record here"
@@ -200,14 +201,14 @@ def test_powered_off_detector_is_not_evidence():
 
 def test_rejects_invalid_character():
     actor = WorldActor()
-    result = LogReadingHandler().execute(_ctx(actor), _cmd("???", {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd("???", {}))
     assert not result.ok
     assert result.reason == "invalid character id"
 
 
 def test_rejects_missing_character():
     actor = WorldActor()
-    result = LogReadingHandler().execute(_ctx(actor), _cmd("entity_9999", {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd("entity_9999", {}))
     assert not result.ok
     assert result.reason == "character does not exist"
 
@@ -216,7 +217,9 @@ def test_rejects_invalid_recorder_id():
     actor = WorldActor()
     room = _room(actor.world)
     investigator = _character(actor.world, room)
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {"recorder_id": "???"}))
+    result = execute_handler(
+        LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {"recorder_id": "???"})
+    )
     assert not result.ok
     assert result.reason == "invalid recorder id"
 
@@ -225,8 +228,8 @@ def test_rejects_missing_recorder():
     actor = WorldActor()
     room = _room(actor.world)
     investigator = _character(actor.world, room)
-    result = LogReadingHandler().execute(
-        _ctx(actor), _cmd(investigator.id, {"recorder_id": "entity_9999"})
+    result = execute_handler(
+        LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {"recorder_id": "entity_9999"})
     )
     assert not result.ok
     assert result.reason == "recorder does not exist"
@@ -237,8 +240,8 @@ def test_rejects_unheld_recorder():
     room = _room(actor.world)
     investigator = _character(actor.world, room)
     recorder = spawn_recorder(actor.world, room_id=room.id)  # on the floor
-    result = LogReadingHandler().execute(
-        _ctx(actor), _cmd(investigator.id, {"recorder_id": str(recorder.id)})
+    result = execute_handler(
+        LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {"recorder_id": str(recorder.id)})
     )
     assert not result.ok
     assert result.reason == "you are not holding that recorder"
@@ -253,8 +256,8 @@ def test_rejects_non_recorder_item():
         [IdentityComponent(name="lantern", kind="item"), PortableComponent(), HoldableComponent()],
     )
     _hold(investigator, lantern)
-    result = LogReadingHandler().execute(
-        _ctx(actor), _cmd(investigator.id, {"recorder_id": str(lantern.id)})
+    result = execute_handler(
+        LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {"recorder_id": str(lantern.id)})
     )
     assert not result.ok
     assert result.reason == "that is not a recorder"
@@ -267,8 +270,8 @@ def test_rejects_investigator_without_a_room():
         actor.world, [IdentityComponent(name="drifter", kind="character"), CharacterComponent()]
     )
     _hold(investigator, recorder)
-    result = LogReadingHandler().execute(
-        _ctx(actor), _cmd(investigator.id, {"recorder_id": str(recorder.id)})
+    result = execute_handler(
+        LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {"recorder_id": str(recorder.id)})
     )
     assert not result.ok
     assert result.reason == "you are not in a room"
@@ -278,7 +281,7 @@ def test_rejects_when_nothing_to_record():
     actor = WorldActor()
     room = _room(actor.world)
     investigator = _character(actor.world, room)
-    result = LogReadingHandler().execute(_ctx(actor), _cmd(investigator.id, {}))
+    result = execute_handler(LogReadingHandler(), _ctx(actor), _cmd(investigator.id, {}))
     assert not result.ok
     assert result.reason == "there is nothing to record here"
 
