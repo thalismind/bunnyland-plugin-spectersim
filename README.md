@@ -61,6 +61,8 @@ v2 additionally contributes:
 - `draw-ward` and `perform-ritual` - verbs for placing wards and banishing presences.
 - `ritual_fragments` - renders ward protection and the held-kit line into prompts.
 - `spawn_ritual_kit`, `spawn_ward` - spawn factories.
+- Optional Bunnyland 3D integration gives wards an emissive model with a restrained,
+  strength-compatible spectral aura anchored to the ward focus.
 
 v3 additionally contributes:
 
