@@ -12,3 +12,4 @@ jobs:
     uses: thalismind/.github/.github/workflows/plugin-ci.yml@main
     with:
       coverage_min: 0
+      base_coverage_min: 0
